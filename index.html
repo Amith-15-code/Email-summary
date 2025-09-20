@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Summary Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://apis.google.com/js/api.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-envelope"></i>
+                    <h1>Email Summary</h1>
+                </div>
+                <div class="header-controls">
+                    <div class="theme-toggle">
+                        <button id="theme-toggle" class="theme-btn">
+                            <i class="fas fa-sun" id="theme-icon"></i>
+                        </button>
+                    </div>
+                    <div class="user-section">
+                        <button id="signin-btn" class="signin-btn">
+                            <i class="fab fa-google"></i>
+                            Sign in with Google
+                        </button>
+                        <div id="user-info" class="user-info hidden">
+                            <img id="user-avatar" class="user-avatar" alt="User Avatar">
+                            <span id="user-name" class="user-name"></span>
+                            <button id="signout-btn" class="signout-btn">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Filters and Settings -->
+            <section class="filters-section">
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="time-filter">Time Range:</label>
+                        <select id="time-filter" class="filter-select">
+                            <option value="1">Last 24 hours</option>
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 3 months</option>
+                            <option value="365">Last year</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="priority-filter">Email Priority:</label>
+                        <select id="priority-filter" class="filter-select">
+                            <option value="all">All emails</option>
+                            <option value="important">Important only</option>
+                            <option value="normal">Normal priority</option>
+                            <option value="low">Low priority</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="visibility-filter">Email Visibility:</label>
+                        <select id="visibility-filter" class="filter-select">
+                            <option value="all">All emails</option>
+                            <option value="unread">Unread only</option>
+                            <option value="read">Read only</option>
+                            <option value="starred">Starred only</option>
+                        </select>
+                    </div>
+
+                    <button id="refresh-btn" class="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </section>
+
+            <!-- Summary Statistics -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-emails">0</h3>
+                            <p>Total Emails</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-envelope-open"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="unread-emails">0</h3>
+                            <p>Unread</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="important-emails">0</h3>
+                            <p>Important</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-spam"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="spam-emails">0</h3>
+                            <p>Spam</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Email Summary List -->
+            <section class="email-summary-section">
+                <div class="section-header">
+                    <h2>Email Summary</h2>
+                    <div class="view-toggle">
+                        <button id="list-view" class="view-btn active">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button id="card-view" class="view-btn">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="loading-spinner" class="loading-spinner hidden">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading emails...</p>
+                </div>
+
+                <div id="email-list" class="email-list">
+                    <!-- Email items will be dynamically generated here -->
+                </div>
+
+                <div id="no-emails" class="no-emails hidden">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No emails found</h3>
+                    <p>Try adjusting your filters or check back later.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Email Detail Modal -->
+    <div id="email-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-subject"></h3>
+                <button id="close-modal" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="email-meta">
+                    <div class="meta-item">
+                        <strong>From:</strong>
+                        <span id="modal-from"></span>
+                    </div>
+                    <div class="meta-item">
+                        <strong>Date:</strong>
+                        <span id="modal-date"></span>
+                    </div>
+                    <div class="meta-item">
+                        <strong>Priority:</strong>
+                        <span id="modal-priority" class="priority-badge"></span>
+                    </div>
+                </div>
+                <div class="email-body">
+                    <h4>Summary:</h4>
+                    <p id="modal-summary"></p>
+                    <h4>Key Points:</h4>
+                    <ul id="modal-keypoints"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
